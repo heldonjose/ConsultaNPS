@@ -32,31 +32,32 @@ class UsuarioAdmin(admin.ModelAdmin):
 
 
 class QuestaoInline(admin.TabularInline):
-    fields = ['questao', 'get_total_respostas', 'get_media', 'detradores', 'passivos', 'promotores',
+    fields = ['questao', 'get_total_respostas', 'media_geral', 'detradores', 'passivos', 'promotores',
               'get_valor_NPS']
-    readonly_fields = ['get_total_respostas', 'get_media', 'detradores', 'passivos', 'promotores',
+    readonly_fields = ['get_total_respostas', 'media_geral', 'detradores', 'passivos', 'promotores',
                        'get_valor_NPS']
     model = QuestaoPesquisa
     max_num = 5
     verbose_name_plural = 'Questões da Pesquisa'
 
     def detradores(self, obj):
-        return '{}%'.format(obj.get_detradores)
+        return '{:.2f}%'.format(obj.get_detradores)
 
     def passivos(self, obj):
-        return '{}%'.format(obj.get_passivos)
+        return '{:.2f}%'.format(obj.get_passivos)
 
     def promotores(self, obj):
-        return '{}%'.format(obj.get_promotores)
+        return '{:.2f}%'.format(obj.get_promotores)
 
-    def detradores(self, obj):
-        return '{}%'.format(obj.get_detradores)
+    def media_geral(self, obj):
+        return '{:.2f}%'.format(obj.get_media)
+
 
 
 @admin.register(Pesquisa)
 class PesquisaAdmin(admin.ModelAdmin):
     list_display = ('descricao', 'status', 'quantidade_questoes')
-    # list_editable = ['status', ]
+    list_editable = ['status', ]
     search_fields = ('descricao',)
     exclude = ['status', ]
     inlines = [QuestaoInline]
@@ -99,19 +100,16 @@ class QuestaoPesquisaPesquisaAdmin(admin.ModelAdmin):
         return '{}'.format(obj.get_total_respostas)
 
     def media_geral(self, obj):
-        return '{}'.format(obj.get_media)
+        return '{:.2f}'.format(obj.get_media)
 
     def valor_nps(self, obj):
         return '{}'.format(obj.get_valor_NPS)
 
     def detradores(self, obj):
-        return '{}%'.format(obj.get_detradores)
+        return '{:.2f}%'.format(obj.get_detradores)
 
     def passivos(self, obj):
-        return '{}%'.format(obj.get_passivos)
+        return '{:.2f}%'.format(obj.get_passivos)
 
     def promotores(self, obj):
-        return '{}%'.format(obj.get_promotores)
-
-    def detradores(self, obj):
-        return '{}%'.format(obj.get_detradores)
+        return '{:.2f}%'.format(obj.get_promotores)
