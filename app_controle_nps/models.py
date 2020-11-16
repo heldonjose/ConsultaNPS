@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import Sum
 
 from util import choicesModels
-from util.choicesModels import CRIADA
+from util.choicesModels import CRIADA, FINALIZADA
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 '''
@@ -71,7 +71,7 @@ class Pesquisa(TimestampableMixin):
         return self.descricao
 
     def get_json(self):
-        questoes = [questao.get_json() for questao in self.questoes.all()]
+        questoes = [questao.get_json() for questao in self.questoes_pesquisas.all()]
         return dict(
             id=self.pk,
             descricao=self.descricao,
@@ -80,13 +80,12 @@ class Pesquisa(TimestampableMixin):
         )
 
     def get_json_detalheNPS(self):
-        questoes = [questao.get_json() for questao in self.questoes.all()]
+        questoes = [questao.get_json() for questao in self.questoes_pesquisas.all()]
         return dict(
             id=self.pk,
             descricao=self.descricao,
             status=self.status,
             questoes=questoes,
-            dados='tttttt',
         )
 
 
@@ -110,29 +109,26 @@ class Questao(TimestampableMixin):
 class QuestaoPesquisa(TimestampableMixin):
     class Meta:
         unique_together = (("pesquisa", "questao",),)
-        verbose_name = 'QuestaoPesquisa'
-        verbose_name_plural = 'QuestaoPesquisa'
+        verbose_name = 'Questao da Pesquisa'
+        verbose_name_plural = 'Questões da Pesquisa'
 
-    pesquisa = models.ForeignKey(Pesquisa, on_delete=models.CASCADE)
-    questao = models.ForeignKey(Questao, on_delete=models.PROTECT)
+    pesquisa = models.ForeignKey(Pesquisa, on_delete=models.CASCADE, related_name='questoes_pesquisas')
+    questao = models.ForeignKey(Questao, on_delete=models.PROTECT, verbose_name='Questão')
 
     @property
     def get_detradores(self):
-        print('self.detradores', self.get_total_respostas)
         if self.get_total_respostas == 0:
             return 0
         return (self.respostas.filter(peso__in=[0, 1, 2, 3, 4, 5, 6]).count() / self.get_total_respostas) * 100
 
     @property
     def get_passivos(self):
-        print('self.detradores', self.get_total_respostas)
         if self.get_total_respostas == 0:
             return 0
         return (self.respostas.filter(peso__in=[7, 8]).count() / self.get_total_respostas) * 100
 
     @property
     def get_promotores(self):
-        print('self.detradores', self.get_total_respostas)
         if self.get_total_respostas == 0:
             return 0
         return (self.respostas.filter(peso__in=[9, 10]).count() / self.get_total_respostas) * 100
@@ -153,18 +149,29 @@ class QuestaoPesquisa(TimestampableMixin):
         nps = '---'
         if self.get_total_respostas > 0:
             detradores_porc = self.get_detradores
-            passivos_porc = self.get_passivos
             promotores_porc = self.get_promotores
-            print(detradores_porc)
-            print(passivos_porc)
-            print(promotores_porc)
             sub_detradores_promotores = promotores_porc - detradores_porc
-            print(sub_detradores_promotores)
             nps = sub_detradores_promotores
         return nps
 
     def __str__(self):
         return '{} - {}'.format(self.pesquisa.descricao, self.questao.descricao)
+
+    def get_json(self):
+        if self.pesquisa.status == FINALIZADA:
+            return dict(
+                descricao = self.questao.descricao,
+                total_respostas=self.get_total_respostas,
+                media=self.get_media,
+                detratores='{}%'.format(self.get_detradores),
+                passivos='{}%'.format(self.get_passivos),
+                promotores='{}%'.format(self.get_promotores),
+                valor_nps='{}%'.format(self.get_valor_NPS),
+            )
+        return dict(
+            descricao=self.questao.descricao,
+
+        )
 
 
 class RespostaQuestaoPesquisa(TimestampableMixin):
@@ -174,3 +181,6 @@ class RespostaQuestaoPesquisa(TimestampableMixin):
 
     questao_pesquisa = models.ForeignKey(QuestaoPesquisa, on_delete=models.CASCADE, related_name='respostas')
     peso = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])
+
+    def __str__(self):
+        return ''
