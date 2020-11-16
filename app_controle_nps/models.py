@@ -187,7 +187,7 @@ class QuestaoPesquisa(TimestampableMixin):
 
     @property
     def get_valor_NPS(self):
-        nps = '---'
+        nps = 0
         if self.get_total_respostas > 0:
             detradores_porc = self.get_detradores
             promotores_porc = self.get_promotores
@@ -246,5 +246,5 @@ class RespostaQuestaoPesquisa(TimestampableMixin):
     questao_pesquisa = models.ForeignKey(QuestaoPesquisa, on_delete=models.CASCADE, related_name='respostas')
     peso = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])
 
-    def __str__(self):
-        return str(self.peso)
+    # def __str__(self):
+    #     return str(self.peso)

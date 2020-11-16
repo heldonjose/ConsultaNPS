@@ -33,9 +33,9 @@ class UsuarioAdmin(admin.ModelAdmin):
 
 class QuestaoInline(admin.TabularInline):
     fields = ['questao', 'get_total_respostas', 'media_geral', 'detradores', 'passivos', 'promotores',
-              'get_valor_NPS']
+              'valor_nps']
     readonly_fields = ['get_total_respostas', 'media_geral', 'detradores', 'passivos', 'promotores',
-                       'get_valor_NPS']
+                       'valor_nps']
     model = QuestaoPesquisa
     max_num = 5
     verbose_name_plural = 'Questões da Pesquisa'
@@ -52,6 +52,8 @@ class QuestaoInline(admin.TabularInline):
     def media_geral(self, obj):
         return '{:.2f}%'.format(obj.get_media)
 
+    def valor_nps(self, obj):
+        return '{:.2f}'.format(obj.get_valor_NPS)
 
 
 @admin.register(Pesquisa)
@@ -103,7 +105,7 @@ class QuestaoPesquisaPesquisaAdmin(admin.ModelAdmin):
         return '{:.2f}'.format(obj.get_media)
 
     def valor_nps(self, obj):
-        return '{}'.format(obj.get_valor_NPS)
+        return '{:.2f}'.format(obj.get_valor_NPS)
 
     def detradores(self, obj):
         return '{:.2f}%'.format(obj.get_detradores)
